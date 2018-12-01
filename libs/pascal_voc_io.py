@@ -5,9 +5,12 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
 import codecs
+from libs.constants import DEFAULT_ENCODING
+from libs.ustr import ustr
+
 
 XML_EXT = '.xml'
-ENCODE_METHOD = 'utf-8'
+ENCODE_METHOD = DEFAULT_ENCODING
 
 class PascalVocWriter:
 
@@ -84,11 +87,7 @@ class PascalVocWriter:
         for each_object in self.boxlist:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
-            try:
-                name.text = unicode(each_object['name'])
-            except NameError:
-                # Py3: NameError: name 'unicode' is not defined
-                name.text = each_object['name']
+            name.text = ustr(each_object['name'])
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
