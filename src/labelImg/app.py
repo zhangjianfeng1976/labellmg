@@ -599,7 +599,7 @@ class MainWindow(QMainWindow, WindowMixin):
         elif osName == 'Linux':
             return ['xdg-open']
         elif osName == 'Darwin':
-            return ['open', '-a', 'Safari']
+            return ['open']
 
     ## Callbacks ##
     def showTutorialDialog(self):
