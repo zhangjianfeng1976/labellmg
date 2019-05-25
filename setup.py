@@ -40,6 +40,7 @@ elif _platform == "darwin":
 APP = [NAME]
 OPTIONS = {
     'argv_emulation': True,
+    'includes' : REQUIRED,
     'iconfile': 'resources/icons/app.icns'
 }
 

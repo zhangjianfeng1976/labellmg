@@ -1,9 +1,8 @@
 #!/bin/sh
 
-brew install python@2
-pip install --upgrade virtualenv 
+pip install --upgrade virtualenv
 
-# clonde labelimg source
+# clone labelimg source
 rm -rf /tmp/labelImgSetup
 mkdir /tmp/labelImgSetup
 cd /tmp/labelImgSetup
@@ -17,11 +16,11 @@ source /tmp/labelImgSetup/labelImg-py3/bin/activate
 cd labelImg-master
 
 # build labelImg app
-pip install py2app
-pip install PyQt5 lxml
+pip3 install py2app
+pip3 install PyQt5 lxml
 make qt5py3
 rm -rf build dist
-python setup.py py2app -A
+python3 setup.py py2app -A
 mv "/tmp/labelImgSetup/labelImg-master/dist/labelImg.app" /Applications
 # deactivate python3
 deactivate
