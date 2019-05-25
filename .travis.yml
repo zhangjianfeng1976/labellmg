@@ -34,8 +34,9 @@ matrix:
         - source activate labelImg-py2qt4
         - conda install -y pyqt=4
         - conda install -y lxml
+        - conda install -y pytest
         - make qt4py2
-        - xvfb-run make testpy2
+        - xvfb-run make test
 
 
     # Python 3 + QT5
@@ -63,8 +64,9 @@ matrix:
         - source activate labelImg-py3qt5
         - conda install -y pyqt=5
         - conda install -y lxml
+        - conda install -y pytest
         - make qt5py3
-        - xvfb-run make testpy3
+        - xvfb-run make test
 
     # Pipenv Python 3 + QT5 - Build .app
     - os: osx
@@ -76,7 +78,7 @@ matrix:
       install:
         - pip3 install pipenv
         - pipenv --three
-        - pipenv run pip install pyqt5 lxml
+        - pipenv run pip install pyqt5 lxml pytest
         - pipenv run make qt5py3
         - rm -rf build dist
         - pipenv run python setup.py py2app

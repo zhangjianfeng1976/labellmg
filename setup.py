@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages, Command
 from sys import platform as _platform
+import sys
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -18,9 +19,13 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-REQUIRED = [
-    'pyqt5', 'lxml'
-]
+REQUIRED = []
+
+if (sys.version_info > (3, 0)):
+    REQUIRED = ['pyqt5', 'lxml']
+else:
+    print('\033[93m For py2, you are unable to installl pyqt4 by pip \033[0m')
+    REQUIRED = ['lxml']
 
 # OS specific settings
 SET_REQUIRES = []
