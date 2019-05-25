@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages, Command
 from sys import platform as _platform
+from shutil import rmtree
 import sys
 import os
 
@@ -18,6 +19,7 @@ with open('README.rst') as readme_file:
 
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
+
 
 REQUIRED = []
 
@@ -47,6 +49,10 @@ OPTIONS = {
 class UploadCommand(Command):
     """Support setup.py upload."""
 
+    description=readme + '\n\n' + history,
+
+    user_options = []
+
     @staticmethod
     def status(s):
         """Prints things in bold."""
@@ -63,6 +69,7 @@ class UploadCommand(Command):
             self.status('Removing previous builds…')
             rmtree(os.path.join(here, 'dist'))
         except OSError:
+            self.status('Fail to remove previous builds..')
             pass
 
         self.status('Building Source and Wheel (universal) distribution…')
@@ -73,8 +80,9 @@ class UploadCommand(Command):
         os.system('twine upload dist/*')
 
         self.status('Pushing git tags…')
+        os.system('git tag -d v{0}'.format(about['__version__']))
         os.system('git tag v{0}'.format(about['__version__']))
-        os.system('git push --tags')
+        # os.system('git push --tags')
 
         sys.exit()
 
