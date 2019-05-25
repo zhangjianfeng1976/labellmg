@@ -7,6 +7,10 @@ LabelImg
 .. image:: https://img.shields.io/travis/tzutalin/labelImg.svg
         :target: https://travis-ci.org/tzutalin/labelImg
 
+.. image:: /resources/icons/app.png
+    :width: 200px
+    :align: center
+
 LabelImg is a graphical image annotation tool.
 
 It is written in Python and uses Qt for its graphical interface.
@@ -28,7 +32,7 @@ Installation
 Download prebuilt binaries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  `Windows & Linux <https://tzutalin.github.io/labelImg/>`__
+-  `Windows <https://github.com/tzutalin/labelImg/releases>`__
 
 -  macOS. Binaries for macOS are not yet available. Help would be appreciated. At present, it must be `built from source <#macos>`__.
 
@@ -52,7 +56,7 @@ Python 2 + Qt4
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-Python 3 + Qt5
+Python 3 + Qt5 (Recommanded)
 
 .. code::
 
@@ -74,27 +78,28 @@ Python 2 + Qt4
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-Python 3 + Qt5 (Works on macOS High Sierra)
+Python 3 + Qt5 (Recommanded)
 
 .. code::
 
-    brew install qt  # will install qt-5.x.x
+    brew install qt  # Install qt-5.x.x by Homebrew
     brew install libxml2
+
+    or
+
+    pip3 install pyqt5 lxml # Install qt and lxml by pip
+
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-    As a side note, if mssing pyrcc5 or lxml, try
-    pip3 install pyqt5 lxml
-
 
 **NEW** Python 3 Virtualenv + Binary
-This avoids a lot of the QT / Python version issues,
-and gives you a nice .app file with a new SVG Icon
+
+This can avoid a lot of the QT / Python version issues, and gives you a nice .app file with a new SVG Icon
 in your /Applications folder. You can consider this script: build-tools/build-for-macos.sh
 
 .. code::
-
 
     brew install python3
     pip install pipenv
@@ -107,12 +112,12 @@ in your /Applications folder. You can consider this script: build-tools/build-fo
     python setup.py py2app -A
     mv "dist/labelImg.app" /Applications
 
+
 Windows
 ^^^^^^^
 
-Download and setup `Python 2.6 or
-later <https://www.python.org/downloads/windows/>`__,
-`PyQt4 <https://www.riverbankcomputing.com/software/pyqt/download>`__
+Install `Python <https://www.python.org/downloads/windows/>`__,
+`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`__
 and `install lxml <http://lxml.de/installation.html>`__.
 
 Open cmd and go to the `labelImg <#labelimg>`__ directory
@@ -242,6 +247,16 @@ Hotkeys
 +------------+--------------------------------------------+
 | ↑→↓←       | Keyboard arrows to move selected rect box  |
 +------------+--------------------------------------------+
+
+**Verify Image:**
+
+When pressing space, the user can flag the image as verified, a green background will appear.
+This is used when creating a dataset automatically, the user can then through all the pictures and flag them instead of annotate them.
+
+**Difficult:**
+
+The difficult field being set to 1 indicates that the object has been annotated as "difficult", for example an object which is clearly visible but difficult to recognize without substantial use of context.
+According to your deep neural network implementation, you can include or exclude difficult objects during training.
 
 How to contribute
 ~~~~~~~~~~~~~~~~~

@@ -4,12 +4,8 @@ import sys
 import time
 import unittest
 
-__author__ = 'TzuTaLin'
-
 dir_name = os.path.abspath(os.path.dirname(__file__))
-libs_path = os.path.join(dir_name, '..', 'libs')
-sys.path.insert(0, libs_path)
-from settings import Settings
+from labelImg.settings import Settings
 
 class TestSettings(unittest.TestCase):
 
@@ -26,7 +22,7 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(settings.get('test1'), 10)
 
         settings.reset()
-        
+
 
 
 if __name__ == '__main__':

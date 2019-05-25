@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
-import resources
 import os
 import sys
-from libs.ustr import ustr
+import locale
+
+from .resources import *
+from .ustr import ustr
+
 try:
     from PyQt5.QtCore import *
 except ImportError:
@@ -26,7 +29,15 @@ class StringBundle:
             self.__loadBundle(path)
 
     @classmethod
-    def getBundle(cls, localeStr=os.getenv('LANG')):
+    def getBundle(cls, localeStr=None):
+        if localeStr is None:
+            try:
+                localeStr = locale.getlocale()[0] if locale.getlocale() and len(
+                    locale.getlocale()) > 0 else os.getenv('LANG')
+            except:
+                print('Invalid locale')
+                localeStr = 'en'
+
         return StringBundle(cls.__create_key, localeStr)
 
     def getString(self, stringId):
@@ -37,11 +48,12 @@ class StringBundle:
         resultPaths = []
         basePath = ":/strings"
         resultPaths.append(basePath)
-        # Don't follow standard BCP47. Simple fallback
-        tags = re.split('[^a-zA-Z]', localeStr)
-        for tag in tags:
-            lastPath = resultPaths[-1]
-            resultPaths.append(lastPath + '-' + tag)
+        if localeStr is not None:
+            # Don't follow standard BCP47. Simple fallback
+            tags = re.split('[^a-zA-Z]', localeStr)
+            for tag in tags:
+                lastPath = resultPaths[-1]
+                resultPaths.append(lastPath + '-' + tag)
 
         return resultPaths
 

@@ -3,11 +3,9 @@ include HISTORY.rst
 include LICENSE
 include README.rst
 
-include resources.qrc
+exclude resources.qrc
 
 recursive-include data *
-recursive-include icons *
-recursive-include libs *
 
 recursive-exclude build-tools *
 recursive-exclude tests *

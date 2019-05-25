@@ -1,27 +1,22 @@
 # ex: set ts=8 noet:
 
-all: qt4
+all: qt5
 
-test: testpy2
-
-testpy2:
-	python -m unittest discover tests
-
-testpy3:
-	python3 -m unittest discover tests
+test:
+	pytest
 
 qt4: qt4py2
 
 qt5: qt5py3
 
 qt4py2:
-	pyrcc4 -py2 -o resources.py resources.qrc
+	pyrcc4 -py2 -o src/labelImg/resources.py resources.qrc
 
 qt4py3:
-	pyrcc4 -py3 -o resources.py resources.qrc
+	pyrcc4 -py3 -o src/labelImg/resources.py resources.qrc
 
 qt5py3:
-	pyrcc5 -o resources.py resources.qrc
+	pyrcc5 -o src/labelImg/resources.py resources.qrc
 
 clean:
 	rm -f ~/.labelImgSettings.pkl resources.pyc

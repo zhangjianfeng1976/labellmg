@@ -26,38 +26,24 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
-# Add internal libs
-from libs.constants import *
-from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText
-from libs.settings import Settings
-from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from libs.stringBundle import StringBundle
-from libs.canvas import Canvas
-from libs.zoomWidget import ZoomWidget
-from libs.labelDialog import LabelDialog
-from libs.colorDialog import ColorDialog
-from libs.labelFile import LabelFile, LabelFileError
-from libs.toolBar import ToolBar
-from libs.pascal_voc_io import PascalVocReader
-from libs.pascal_voc_io import XML_EXT
-from libs.yolo_io import YoloReader
-from libs.yolo_io import TXT_EXT
-from libs.ustr import ustr
-from libs.version import __version__
-from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from .canvas import Canvas
+from .colorDialog import ColorDialog
+from .constants import *
+from .hashableQListWidgetItem import HashableQListWidgetItem
+from .labelDialog import LabelDialog
+from .labelFile import LabelFile, LabelFileError
+from .pascal_voc_io import PascalVocReader, XML_EXT
+from .resources import *
+from .settings import Settings
+from .shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+from .stringBundle import StringBundle
+from .toolBar import ToolBar
+from .ustr import ustr
+from .utils import *
+from .yolo_io import YoloReader, TXT_EXT
+from .zoomWidget import ZoomWidget
 
 __appname__ = 'labelImg'
-
-# Utility functions and classes.
-
-def have_qstring():
-    '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
-    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
-
-def util_qt_strlistclass():
-    return QStringList if have_qstring() else list
-
 
 class WindowMixin(object):
 
@@ -675,6 +661,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.canvas.editing():
             return
         item = self.currentItem()
+        if not item:
+            return
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
@@ -758,6 +746,12 @@ class MainWindow(QMainWindow, WindowMixin):
         for label, points, line_color, fill_color, difficult in shapes:
             shape = Shape(label=label)
             for x, y in points:
+
+                # Ensure the labels are within the bounds of the image. If not, fix them.
+                x, y, snapped = self.canvas.snapPointToCanvas(x, y)
+                if snapped:
+                    self.setDirty()
+
                 shape.addPoint(QPointF(x, y))
             shape.difficult = difficult
             shape.close()
@@ -795,20 +789,19 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                if ustr(annotationFilePath[-4:]) != ".xml":
+                if annotationFilePath[-4:].lower() != ".xml":
                     annotationFilePath += XML_EXT
-                print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             elif self.usingYoloFormat is True:
-                if annotationFilePath[-4:] != ".txt":
+                if annotationFilePath[-4:].lower() != ".txt":
                     annotationFilePath += TXT_EXT
-                print ('Img: ' + self.filePath + ' -> Its txt: ' + annotationFilePath)
                 self.labelFile.saveYoloFormat(annotationFilePath, shapes, self.filePath, self.imageData, self.labelHist,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
                 self.labelFile.save(annotationFilePath, shapes, self.filePath, self.imageData,
                                     self.lineColor.getRgb(), self.fillColor.getRgb())
+            print('Image:{0} -> Annotation:{1}'.format(self.filePath, annotationFilePath))
             return True
         except LabelFileError as e:
             self.errorMessage(u'Error saving label data', u'<b>%s</b>' % e)
@@ -970,13 +963,19 @@ class MainWindow(QMainWindow, WindowMixin):
         # Make sure that filePath is a regular python string, rather than QString
         filePath = ustr(filePath)
 
+        # Fix bug: An  index error after select a directory when open a new file.
         unicodeFilePath = ustr(filePath)
+        unicodeFilePath = os.path.abspath(unicodeFilePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
         if unicodeFilePath and self.fileListWidget.count() > 0:
-            index = self.mImgList.index(unicodeFilePath)
-            fileWidgetItem = self.fileListWidget.item(index)
-            fileWidgetItem.setSelected(True)
+            if unicodeFilePath in self.mImgList:
+                index = self.mImgList.index(unicodeFilePath)
+                fileWidgetItem = self.fileListWidget.item(index)
+                fileWidgetItem.setSelected(True)
+            else:
+                self.fileListWidget.clear()
+                self.mImgList.clear()
 
         if unicodeFilePath and os.path.exists(unicodeFilePath):
             if LabelFile.isLabelFile(unicodeFilePath):
@@ -1133,7 +1132,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     relativePath = os.path.join(root, file)
                     path = ustr(os.path.abspath(relativePath))
                     images.append(path)
-        images.sort(key=lambda x: x.lower())
+        natural_sort(images, key=lambda x: x.lower())
         return images
 
     def changeSavedirDialog(self, _value=False):
@@ -1293,13 +1292,13 @@ class MainWindow(QMainWindow, WindowMixin):
             savedFileName = os.path.splitext(imgFileName)[0]
             savedPath = os.path.join(imgFileDir, savedFileName)
             self._saveFile(savedPath if self.labelFile
-                           else self.saveFileDialog())
+                           else self.saveFileDialog(removeExt=False))
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
         self._saveFile(self.saveFileDialog())
 
-    def saveFileDialog(self):
+    def saveFileDialog(self, removeExt=True):
         caption = '%s - Choose File' % __appname__
         filters = 'File (*%s)' % LabelFile.suffix
         openDialogPath = self.currentPath()
@@ -1311,7 +1310,10 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
             fullFilePath = ustr(dlg.selectedFiles()[0])
-            return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
+            if removeExt:
+                return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
+            else:
+                return fullFilePath
         return ''
 
     def _saveFile(self, annotationFilePath):
@@ -1459,7 +1461,7 @@ def get_main_app(argv=[]):
     # Usage : labelImg.py image predefClassFile saveDir
     win = MainWindow(argv[1] if len(argv) >= 2 else None,
                      argv[2] if len(argv) >= 3 else os.path.join(
-                         os.path.dirname(sys.argv[0]),
+                         os.path.abspath(os.path.dirname(__file__)),
                          'data', 'predefined_classes.txt'),
                      argv[3] if len(argv) >= 4 else None)
     win.show()
@@ -1473,3 +1475,4 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
+

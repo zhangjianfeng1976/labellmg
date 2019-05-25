@@ -1,9 +1,10 @@
 resources/icons/.DS_Store
-
+.coverage
 resources.py
 
 .idea*
 labelImg.egg-info*
+.eggs
 
 *.pyc
 .*.swp
