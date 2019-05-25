@@ -13,12 +13,14 @@ python pyinstaller/pyinstaller.py --hidden-import=xml \
             --hidden-import=xml.etree \
             --hidden-import=xml.etree.ElementTree \
             --hidden-import=lxml.etree \
-             -D -F -n labelImg -c "../labelImg.py" -p ../libs -p ../
+            #-i ../resources/icons/app.png \
+            --paths=../src/ \
+            --paths=../src/labelImg \
+             -D -F -n labelImg -c "../labelImg.py"
 
 FOLDER=$(git describe --abbrev=0 --tags)
 FOLDER="linux_"$FOLDER
 rm -rf "$FOLDER"
 mkdir "$FOLDER"
 cp dist/labelImg $FOLDER
-cp -rf ../data $FOLDER/data
 zip "$FOLDER.zip" -r $FOLDER

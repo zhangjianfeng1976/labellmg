@@ -21,12 +21,15 @@ wine c:/Python27/python.exe pyinstaller/pyinstaller.py --hidden-import=xml \
             --hidden-import=xml.etree \
             --hidden-import=xml.etree.ElementTree \
             --hidden-import=lxml.etree \
-             -D -F -n labelImg -c "../labelImg.py" -p ../libs -p ../
+            #-i ../resources/icons/app.png \
+            --windowed \
+            --paths=../src/ \
+            --paths=../src/labelImg \
+             -D -F -n labelImg -c "../labelImg.py" -p ../ -p ../src/labelImg/
 
 FOLDER=$(git describe --abbrev=0 --tags)
 FOLDER="windows_"$FOLDER
 rm -rf "$FOLDER"
 mkdir "$FOLDER"
 cp dist/labelImg.exe $FOLDER
-cp -rf ../data $FOLDER/data
 zip "$FOLDER.zip" -r $FOLDER
